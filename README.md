@@ -45,7 +45,7 @@
 ## 项目部署教程
 1. **克隆项目**：
     ```bash
-    git clone https://github.com/example/mindmap-generator.git
+    git clone https://github.com/PastKing/MarkMap-OpenAi-ChatGpt.git
     cd mindmap-generator
     ```
 
