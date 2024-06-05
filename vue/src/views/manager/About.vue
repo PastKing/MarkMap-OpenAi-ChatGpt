@@ -34,9 +34,9 @@ PastKing
 
 # 源码地址
 
-后端源码(GitHub)：[bbs-springboot](https://github.com/maliangnansheng/bbs-springboot)、前端源码Vue2(GitHub)：[bbs-vue-ui](https://github.com/maliangnansheng/bbs-vue-ui)、前端源码Vue3(GitHub)：[bbs-vue3-ui](https://github.com/maliangnansheng/bbs-vue3-ui)
+源码(GitHub)：[mindmap-generator](https://github.com/PastKing/MarkMap-OpenAi-ChatGpt)
 
-后端源码(Gitee)：[bbs-springboot](https://gitee.com/maliangnansheng/bbs-springboot)、前端源码Vue2(Gitee)：[bbs-vue-ui](https://gitee.com/maliangnansheng/bbs-vue-ui)、前端源码Vue3(Gitee)：[bbs-vue3-ui](https://gitee.com/maliangnansheng/bbs-vue3-ui)
+源码(Gitee)：[mindmap-generator](https://gitee.com/past-dust/mindmap-generator)
 
 # 赞助/支持
 `
