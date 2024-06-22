@@ -10,7 +10,7 @@ module.exports = defineConfig({
   chainWebpack: config =>{
     config.plugin('html')
         .tap(args => {
-          args[0].title = "MarkMap";
+          args[0].title = "PlantMindMap";
           return args;
         })
   }
