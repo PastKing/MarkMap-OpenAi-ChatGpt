@@ -1,49 +1,62 @@
 <template>
     <el-row :gutter="20" class="mind-container">
-        <el-col :span="8" class="left-panel">
+        <el-col :span="6" class="left-panel">
+            <!-- 选择输入模式 -->
             <el-row :gutter="20">
                 <el-col :span="24">
-                    <el-input v-model="title" placeholder="输入标题或URL"></el-input>
-                </el-col>
-            </el-row>
-            <el-row :gutter="20" style="margin-top: 10px;">
-                <el-col :span="8">
-                    <el-button type="primary" @click="generateMindMap">生成</el-button>
-                </el-col>
-                <el-col :span="8">
-                    <el-checkbox v-model="continuousQA">连续问答</el-checkbox>
+                    <el-select v-model="inputMode" placeholder="选择模式">
+                        <el-option label="URL" value="url"></el-option>
+                        <el-option label="自定义文本" value="text"></el-option>
+                    </el-select>
                 </el-col>
             </el-row>
             <el-row :gutter="20" style="margin-top: 20px;">
+                <!-- 根据选择显示输入框 -->
+                <el-col :span="24" v-if="inputMode === 'url'">
+                    <el-input v-model="urlInput" placeholder="输入URL"></el-input>
+                </el-col>
+                <el-col :span="24" v-if="inputMode === 'text'">
+                    <el-input v-model="title" placeholder="输入标题"></el-input>
+                </el-col>
+            </el-row>
+            <el-row :gutter="20" style="margin-top: 20px;" v-if="inputMode === 'text'">
                 <el-col :span="24">
                     <el-input v-model="editorContent" type="textarea" :rows="10" placeholder="编辑内容"></el-input>
                 </el-col>
             </el-row>
+            <el-row :gutter="20" style="margin-top: 20px;">
+                <el-col :span="12">
+                    <el-button type="primary" @click="generateMindMap">生成</el-button>
+                </el-col>
+                <el-col :span="12">
+                    <el-checkbox v-model="continuousQA">连续问答</el-checkbox>
+                </el-col>
+            </el-row>
         </el-col>
 
-        <el-col :span="16" class="right-panel">
+        <el-col :span="18" class="right-panel">
             <div class="svg-container">
                 <svg ref="svgRef" class="markmap-svg"></svg>
             </div>
             <el-row :gutter="10" class="controls">
-                <el-col :span="6">
+                <el-col :span="4">
                     <el-button @click="zoomIn">放大</el-button>
                 </el-col>
-                <el-col :span="6">
+                <el-col :span="4">
                     <el-button @click="zoomOut">缩小</el-button>
                 </el-col>
-                <el-col :span="6">
+                <el-col :span="4">
                     <el-button @click="fitToScreen">适应屏幕</el-button>
                 </el-col>
-                <el-col :span="6">
+                <el-col :span="12">
                     <el-dropdown @command="handleDownload" trigger="hover">
                         <el-button>
                             下载 <i class="el-icon-arrow-down el-icon--right"></i>
                         </el-button>
                         <el-dropdown-menu slot="dropdown">
                             <el-dropdown-item command="png">.png</el-dropdown-item>
-                            <el-dropdown-item command="svg">.svg</el-dropdown-item>
                             <el-dropdown-item command="jpeg">.jpeg</el-dropdown-item>
+                            <el-dropdown-item command="svg">.svg</el-dropdown-item>
                         </el-dropdown-menu>
                     </el-dropdown>
                 </el-col>
@@ -64,25 +77,16 @@ export default {
     setup() {
         const transformer = new Transformer()
 
-        const title = ref('')
-        const editorContent = ref(`
-# 思维导图
-
-1. 标题1
- - 子标题1
- - 子标题2
-3. 标题2
-4. 标题3
-- beautiful
-- useful
-- easy
-- interactive
-        `)
+        const inputMode = ref('text') // 默认模式为text
+        const urlInput = ref('')     // URL输入框
+        const title = ref('')        // 标题输入框 (用于自定义文本模式)
+        const editorContent = ref(`# 思维导图\n1. 标题1\n - 子标题1\n - 子标题2\n3. 标题2\n4. 标题3\n- beautiful\n- useful\n- easy\n- interactive`)
         const continuousQA = ref(false)
         const conversationHistory = ref([])
 
         const mm = ref(null)
         const svgRef = ref(null)
+        const fitToScreenState = ref(false)
 
         const update = () => {
             if (mm.value && svgRef.value) {
@@ -92,29 +96,24 @@ export default {
             }
         }
 
-
         const zoomIn = () => mm.value && mm.value.rescale(1.25)
         const zoomOut = () => mm.value && mm.value.rescale(0.8)
-        const fitToScreen = () => mm.value && mm.value.fit()
-
-        const isUrl = (str) => {
-            try {
-                new URL(str);
-                return true;
-            } catch (_) {
-                return false;
+        const fitToScreen = () => {
+            if (mm.value) {
+                mm.value.fit()
+                fitToScreenState.value = true
             }
         }
 
         const generateMindMap = async () => {
             try {
                 const model =
-                    (isUrl(title.value) ? process.env.VUE_APP_URL_MODEL : process.env.VUE_APP_DEFAULT_MODEL)
+                    (inputMode.value === 'url' ? process.env.VUE_APP_URL_MODEL : process.env.VUE_APP_DEFAULT_MODEL)
 
                 const messages = [
                     {
                         role: 'system',
-                        content: isUrl(title.value)
+                        content: inputMode.value === 'url'
                             ? '请分析给定的URL内容，并以markdown格式输出一个相关的思维导图，不要无用的说明，只需呈现主题、子主题、关联关系即可，若无法访问，也要保证思维导图的完整性。确保输出是有效的markdown，以"# 主题"开始，使用"-"或数字来表示层级，不要使用代码块。'
                             : '请设计一个思维导图，以markdown格式输出，不要无用的说明，只需呈现主题、子主题、关联关系即可。确保输出是有效的markdown，以"# 主题"开始，使用"-"或数字来表示层级，不要使用代码块。'
                     },
@@ -128,12 +127,12 @@ export default {
                     })
                     messages.push({
                         role: 'user',
-                        content: `基于上述内容，继续深入探讨"${title.value}"这个主题，补充更多相关的想法和概念。`
+                        content: `基于上述内容，继续深入探讨"${inputMode.value === 'url' ? urlInput.value : title.value}"这个主题，补充更多相关的想法和概念。`
                     })
                 } else {
                     messages.push({
                         role: 'user',
-                        content: title.value
+                        content: inputMode.value === 'url' ? urlInput.value : title.value
                     })
                 }
 
@@ -167,18 +166,16 @@ export default {
                     for (const line of lines) {
                         if (line === 'data: [DONE]') {
                             editorContent.value = result.trim()
-                            // Update conversation history
                             if (continuousQA.value) {
                                 conversationHistory.value.push({
                                     role: 'user',
-                                    content: title.value
+                                    content: inputMode.value === 'url' ? urlInput.value : title.value
                                 })
                                 conversationHistory.value.push({
                                     role: 'assistant',
                                     content: result.trim()
                                 })
                             } else {
-                                // Reset conversation history if not in continuous QA mode
                                 conversationHistory.value = []
                             }
                             return
@@ -201,18 +198,31 @@ export default {
 
         const handleDownload = async (format) => {
             if (!svgRef.value) return
+
             try {
                 let dataUrl;
+                const svgNode = svgRef.value;
+
+                // 强制适配屏幕下载
+                if (!fitToScreenState.value) {
+                    fitToScreen();
+                }
+                // 等待500ms后再下载
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                // 设置白色背景
+                svgNode.style.backgroundColor = '#ffffff';
+
                 switch (format) {
                     case 'png':
-                        dataUrl = await htmlToImage.toPng(svgRef.value);
+                        dataUrl = await htmlToImage.toPng(svgNode, { backgroundColor: '#ffffff' });
                         break;
                     case 'jpeg':
-                        dataUrl = await htmlToImage.toJpeg(svgRef.value);
+                        dataUrl = await htmlToImage.toJpeg(svgNode, { backgroundColor: '#ffffff' });
                         break;
                     case 'svg':
-                        const svgContent = new XMLSerializer().serializeToString(svgRef.value);
-                        const svgBlob = new Blob([svgContent], {type: 'image/svg+xml;charset=utf-8'});
+                        const svgContent = new XMLSerializer().serializeToString(svgNode);
+                        const svgBlob = new Blob([svgContent], { type: 'image/svg+xml;charset=utf-8' });
                         saveAs(svgBlob, `mindmap.svg`);
                         return;
                     default:
@@ -222,7 +232,7 @@ export default {
             } catch (error) {
                 console.error('Error saving image:', error);
             }
-        };
+        }
 
         onMounted(() => {
             nextTick(() => {
@@ -238,6 +248,8 @@ export default {
         })
 
         return {
+            inputMode,
+            urlInput,
             title,
             editorContent,
             continuousQA,
@@ -245,6 +257,7 @@ export default {
             zoomIn,
             zoomOut,
             fitToScreen,
+            fitToScreenState,
             svgRef,
             handleDownload
         }
@@ -257,6 +270,8 @@ export default {
     width: 100%;
     height: 100%;
     display: flex;
+    padding: 10px;
+    background-color: #f5f5f5;
 }
 
 .left-panel {
@@ -264,12 +279,19 @@ export default {
     flex-direction: column;
     max-height: 100vh;
     overflow: auto;
+    padding: 20px;
+    background-color: #fff;
+    border-right: 1px solid #dcdcdc;
+    border-radius: 10px;
 }
 
 .right-panel {
     display: flex;
     flex-direction: column;
     flex: 1;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
 }
 
 .svg-container {
@@ -277,6 +299,10 @@ export default {
     display: flex;
     justify-content: center;
     align-items: center;
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #dcdcdc;
+    border-radius: 10px;
 }
 
 .markmap-svg {

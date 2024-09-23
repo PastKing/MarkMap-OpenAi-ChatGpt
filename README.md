@@ -51,7 +51,7 @@
 ## 联系作者
 - **邮箱**：pastking@ltde.cn
 - **公众号**：昔尘科技
-
+---
 ## 部署与运行
 
 ### 环境要求
@@ -70,14 +70,8 @@ git clone https://github.com/PastKing/MarkMap-OpenAi-ChatGpt.git
 cd MarkMap-OpenAi-ChatGpt
 ```
 
-该项目的主要代码位于 `vue` 目录下，因此你需要进入该子目录：
-
-```bash
-cd vue
-```
-
 ### 安装依赖
-进入 `vue` 目录后，运行以下命令安装项目所需的依赖：
+进入 `MarkMap-OpenAi-ChatGpt` 目录后，运行以下命令安装项目所需的依赖：
 
 ```bash
 npm install
@@ -197,8 +191,6 @@ Vercel会自动识别Vue项目，默认的设置无需更改：
 ### 第三步：获取Vercel URL
 
 部署完成后，Vercel 会为你的项目提供一个唯一的URL，你可以使用该链接分享或自定义为你自己的域名。
-
----
 
 
 ## 常见问题
