@@ -242,6 +242,8 @@ VUE_APP_API_KEY=your-api-key
 
 ---
 
+[![Powered by DartNode](https://dartnode.com/branding/DN-Open-Source-sm.png)](https://dartnode.com "Powered by DartNode - Free VPS for Open Source")
+
 此文档现已更新为包含进入 `vue` 子目录的操作步骤。如果项目目录结构或构建工具有变化，可以根据实际情况继续调整。
 
 
